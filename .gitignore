@@ -8,7 +8,6 @@ env
 env*
 dist
 build
-static/db
 *.egg
 *.egg-info
 _mailinglist

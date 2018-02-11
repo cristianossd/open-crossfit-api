@@ -7,7 +7,7 @@ app = Flask(__name__)
 AFFILIATES_ENDPOINT = 'https://map.crossfit.com/ac'
 AFFILIATES_FILE = 'static/db/affiliates.json'
 
-@app.route('/', methods=['GET'])
+@app.route('/affiliates', methods=['GET'])
 def get_affiliates():
     params = {'term': 'crossfit'}
     r = requests.get(AFFILIATES_ENDPOINT, params=params)
