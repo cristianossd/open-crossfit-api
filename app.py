@@ -6,16 +6,18 @@ app = Flask(__name__)
 
 AFFILIATES_ENDPOINT = 'https://map.crossfit.com/ac'
 AFFILIATES_FILE = 'static/db/affiliates.json'
+ATHLETES_ENDPOINT = 'https://games.crossfit.com/competitions/api/v1/competitions/open/2018/leaderboards'
+ATHLETES_FILE = lambda sex: 'static/db/%s_athletes.json' % sex
 
-@app.route('/affiliates', methods=['GET'])
-def get_affiliates():
+@app.route('/affiliates/<string:country>/<string:state>', methods=['GET'])
+def get_affiliates(country, state):
     params = {'term': 'crossfit'}
     r = requests.get(AFFILIATES_ENDPOINT, params=params)
 
     affiliates_num = 0
 
     if r.status_code == 200:
-        affiliates_fn = lambda a: a['state'] == 'Bahia' and a['country'] == 'Brazil'
+        affiliates_fn = lambda a: a['state'] == state and a['country'] == country
         state_affiliates = list(filter(affiliates_fn, r.json()))
 
         with open(AFFILIATES_FILE, 'w') as f:
@@ -23,4 +25,51 @@ def get_affiliates():
 
         affiliates_num = len(state_affiliates)
 
-    return 'Found %d affiliates in Bahia\n' % affiliates_num
+    return 'Found %d affiliates in %s\n' %(affiliates_num, state)
+
+@app.route('/athletes', methods=['GET'])
+def get_athletes():
+    leaderboard_key = 'leaderboardRows'
+    men_athletes = []
+    women_athletes = []
+    men_params = {'division': 1, 'scaled': 0}
+    women_params = {'division': 2, 'scaled': 0}
+
+    map_athletes = lambda a: a['entrant']
+
+    with open(AFFILIATES_FILE, 'r') as json_data:
+        affiliates = json.load(json_data)
+
+        for affiliate in affiliates:
+            print('[%s] Men athletes' % affiliate['0'])
+            men = []
+
+            men_params['affiliate'] = affiliate['5']
+            r = requests.get(ATHLETES_ENDPOINT, params=men_params)
+            if leaderboard_key in r.json():
+                men = list(map(map_athletes, r.json()[leaderboard_key]))
+                for a in men: print(a['competitorName'])
+
+                men_athletes = men_athletes + men
+
+            print('[%s] Women athletes' % affiliate['0'])
+            women = []
+
+            women_params['affiliate'] = affiliate['5']
+            r = requests.get(ATHLETES_ENDPOINT, params=women_params)
+            if leaderboard_key in r.json():
+                women = list(map(map_athletes, r.json()[leaderboard_key]))
+                for a in women: print(a['competitorName'])
+
+                women_athletes = women_athletes + women
+
+            print()
+
+        with open(ATHLETES_FILE('men'), 'w') as f:
+            json.dump(men_athletes, f)
+
+        with open(ATHLETES_FILE('women'), 'w') as f:
+            json.dump(women_athletes, f)
+
+    return 'Found %d athletes in Bahia\n' % (len(men_athletes) + len(women_athletes))
+
