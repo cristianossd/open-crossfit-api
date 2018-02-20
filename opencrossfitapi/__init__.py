@@ -1,0 +1,1 @@
+from .opencrossfitapi import app

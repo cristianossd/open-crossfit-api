@@ -1,13 +1,23 @@
+from flask import Flask
+
 import requests
 import json
 
-from flask import Flask
+# configuration
+
+SECRET_KEY='259303671668505404683084822181292439349L'
+
+# create api
 app = Flask(__name__)
+app.config.from_object(__name__)
+app.config.from_envvar('OPENCROSSFITAPI_SETTINGS', silent=True)
+
+# routes constants
 
 AFFILIATES_ENDPOINT = 'https://map.crossfit.com/ac'
-AFFILIATES_FILE = 'static/db/affiliates.json'
+AFFILIATES_FILE = 'opencrossfitapi/static/db/affiliates.json'
 ATHLETES_ENDPOINT = 'https://games.crossfit.com/competitions/api/v1/competitions/open/2018/leaderboards'
-ATHLETES_FILE = lambda sex: 'static/db/%s_athletes.json' % sex
+ATHLETES_FILE = lambda sex: 'opencrossfitapi/static/db/%s_athletes.json' % sex
 
 @app.route('/affiliates/<string:country>/<string:state>', methods=['GET'])
 def get_affiliates(country, state):
@@ -35,8 +45,6 @@ def get_athletes():
     men_params = {'division': 1, 'scaled': 0}
     women_params = {'division': 2, 'scaled': 0}
 
-    map_athletes = lambda a: a['entrant']
-
     with open(AFFILIATES_FILE, 'r') as json_data:
         affiliates = json.load(json_data)
 
@@ -47,7 +55,7 @@ def get_athletes():
             men_params['affiliate'] = affiliate['5']
             r = requests.get(ATHLETES_ENDPOINT, params=men_params)
             if leaderboard_key in r.json():
-                men = list(map(map_athletes, r.json()[leaderboard_key]))
+                men = list(map(mount_athlete, r.json()[leaderboard_key]))
                 for a in men: print(a['competitorName'])
 
                 men_athletes = men_athletes + men
@@ -58,7 +66,7 @@ def get_athletes():
             women_params['affiliate'] = affiliate['5']
             r = requests.get(ATHLETES_ENDPOINT, params=women_params)
             if leaderboard_key in r.json():
-                women = list(map(map_athletes, r.json()[leaderboard_key]))
+                women = list(map(mount_athlete, r.json()[leaderboard_key]))
                 for a in women: print(a['competitorName'])
 
                 women_athletes = women_athletes + women
@@ -73,3 +81,9 @@ def get_athletes():
 
     return 'Found %d athletes in Bahia\n' % (len(men_athletes) + len(women_athletes))
 
+# could this method be protected?
+def mount_athlete(athlete):
+    new_athlete = athlete['entrant']
+    new_athlete['scores'] = athlete['scores']
+
+    return new_athlete
