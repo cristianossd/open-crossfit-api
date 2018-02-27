@@ -56,9 +56,10 @@ def get_athletes():
             r = requests.get(ATHLETES_ENDPOINT, params=men_params)
             if leaderboard_key in r.json():
                 men = list(map(mount_athlete, r.json()[leaderboard_key]))
-                for a in men: print(a['competitorName'])
+                filtered_men = list(filter(lambda a: a != None, men))
+                for a in filtered_men: print(a['competitorName'])
 
-                men_athletes = men_athletes + men
+                men_athletes = men_athletes + filtered_men
 
             print('[%s] Women athletes' % affiliate['0'])
             women = []
@@ -67,9 +68,10 @@ def get_athletes():
             r = requests.get(ATHLETES_ENDPOINT, params=women_params)
             if leaderboard_key in r.json():
                 women = list(map(mount_athlete, r.json()[leaderboard_key]))
-                for a in women: print(a['competitorName'])
+                filtered_women = list(filter(lambda a: a != None, women))
+                for a in filtered_women: print(a['competitorName'])
 
-                women_athletes = women_athletes + women
+                women_athletes = women_athletes + filtered_women
 
             print()
 
@@ -81,9 +83,19 @@ def get_athletes():
 
     return 'Found %d athletes in Bahia\n' % (len(men_athletes) + len(women_athletes))
 
-# could this method be protected?
 def mount_athlete(athlete):
-    new_athlete = athlete['entrant']
-    new_athlete['scores'] = athlete['scores']
+    try:
+        new_athlete = athlete.get('entrant')
+        new_athlete['scores'] = athlete.get('scores')
 
-    return new_athlete
+        # 18.1
+        new_athlete['scores'][0] = build_18_1(new_athlete.get('scores')[0])
+
+        return new_athlete
+    except:
+        return
+
+def build_18_1(score):
+    if score['scaled'] == '1':
+        print('SACALED!!')
+        raise Exception('Scaled')
