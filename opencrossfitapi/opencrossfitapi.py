@@ -76,10 +76,12 @@ def get_athletes():
             print()
 
         with open(ATHLETES_FILE('men'), 'w') as f:
-            json.dump(men_athletes, f)
+            sorted_men = list(sorted(men_athletes, key=lambda a: a['scores'][0]))
+            json.dump(sorted_men, f)
 
         with open(ATHLETES_FILE('women'), 'w') as f:
-            json.dump(women_athletes, f)
+            sorted_women = list(sorted(women_athletes, key=lambda a: a['scores'][0]))
+            json.dump(sorted_women, f)
 
     return 'Found %d athletes in Bahia\n' % (len(men_athletes) + len(women_athletes))
 
@@ -99,3 +101,10 @@ def build_18_1(score):
     if score['scaled'] == '1':
         print('SACALED!!')
         raise Exception('Scaled')
+
+    new_score = {
+        'score': score.get('score'),
+        'scoreDisplay': score.get('scoreDisplay')
+    }
+
+    return new_score
