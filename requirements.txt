@@ -5,7 +5,7 @@ click==6.7
 Flask==0.12.3
 idna==2.6
 itsdangerous==0.24
-Jinja2==2.10
+Jinja2==2.10.1
 MarkupSafe==1.0
 -e git+git@github.com:cristianossd/open-crossfit-api.git@c2f5aed28a86d552259ccb0a78e13ea0bca62c67#egg=opencrossfitapi
 pluggy==0.6.0
