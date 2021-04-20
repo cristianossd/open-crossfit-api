@@ -9,7 +9,7 @@ Jinja2==2.10.1
 MarkupSafe==1.0
 -e git+git@github.com:cristianossd/open-crossfit-api.git@c2f5aed28a86d552259ccb0a78e13ea0bca62c67#egg=opencrossfitapi
 pluggy==0.6.0
-py==1.5.2
+py==1.10.0
 pytest==3.4.1
 requests==2.20.0
 six==1.11.0
